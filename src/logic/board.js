@@ -2,14 +2,10 @@
 import type { Node } from 'React';
 import * as mobx from 'mobx';
 import Immutable from 'immutable';
+import { GameObject } from './object';
 
 export class Board {
-  tiles = new Immutable.List<Node>();
-  cols = 0;
   /*
-   * 0, 1, 2
-   * 3, 4, 5
-   *
    * 0, 1, 2
    * 3, 4, 5
    * 6, 7, 8
@@ -19,11 +15,11 @@ export class Board {
    * (0, 0), (0, 1), (0, 2)
    *
    * i = (W * (H - 1)) + x - H * y
-   * 0 = 6         
-   * 4 = 6             + 1 - 3 * 1
-   * 8 = 6             + 2 - 0
-   *
   */
+
+  tiles = new Immutable.List<Node>();
+  objects: Immutable.Map<string, GameObject> = new Immutable.Map();
+  cols = 0;
 
   constructor(tiles: Immutable.List<Node>, cols: number) {
     this.tiles = tiles;
@@ -55,6 +51,27 @@ export class Board {
   contained(x: number, y: number): boolean {
     return x >= 0 && y >= 0 && x < this.cols && y < this.rows;
   }
+
+  addObject(x: number, y: number, object: GameObject) {
+    if (!this.contained(x, y)) { throw new Error('not contained') }
+    this.objects = this.objects.set(String([x, y]), object);
+  }
+
+  getObject(x: number, y: number): ?GameObject {
+    return this.objects.get(String([x, y]), undefined);
+  }
+
+  moveObject(object: GameObject, x: number, y: number) {
+    if (this.objects.has(String([x, y]))) {
+      throw new Error('Cannot move an object to an occupied space');
+    }
+
+    const key = this.objects.keyOf(object);
+    if (!key) {
+      throw new Error('Consistent error. Object not found in board');
+    }
+    this.objects = this.objects.delete(key).set(String([x, y]), object);
+  }
 }
 
 // Avoid using experimental decorate syntax
@@ -62,6 +79,7 @@ mobx.decorate(
   Board,
   {
     tiles: mobx.observable,
+    objects: mobx.observable,
     cols: mobx.observable,
     length: mobx.computed,
     rows: mobx.computed,
@@ -69,15 +87,6 @@ mobx.decorate(
 )
 
 export default new Board(
-  Immutable.List([
-    0, 1, 2, 3, 5, 5, 1, '\u2022',
-    2, 2, 2, 1, 3, 2, 3, 3,
-    2, 2, 2, 1, 3, 2, 3, 3,
-    0, 1, 2, 3, 5, 5, 1, 3,
-    0, 1, 2, 3, 5, 5, 1, '\u2022',
-    2, 2, 2, 1, 3, 2, 3, 3,
-    2, 2, 2, 1, 3, 2, 3, 3,
-    0, 1, 2, 3, 5, 5, 1, 3,
-  ]),
-  8,
+  Immutable.List(Array(64 * 64).fill('\u00b7')),
+  64,
 );

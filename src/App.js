@@ -36,18 +36,7 @@ class FontSheet extends Immutable.Record({
   style: DefaultFontTile,
   tileSize: 10,
   cols: 16,
-}) {
-  /* Returns the X, Y starting corner */
-  getCorner(col: number, row?: number) {
-    if (row === undefined) {
-      // Use a linear indexing scheme
-      const index = col;
-      return [(index % this.get('cols')) * this.get('tileSize'), Math.floor(index / this.get('cols') * this.get('tileSize'))];
-    }
-
-    return [col * this.get('tileSize'), row * this.get('tileSize')];
-  }
-}
+}) { }
 
 const defaultSheet = new FontSheet();
 
@@ -73,8 +62,11 @@ class FontSheetCanvas extends React.Component<{
                   <tr key={`row-${y}`}>
                     {
                       Array(map.cols).fill().map((_, x) => {
-                        const tile = map.getTile(x, y);
-                        const id = `tile-${x}-${y}`
+                        const object = map.getObject(x, y);
+                        let tile;
+                        if (object) { tile = object.component; }
+                        else { tile = map.getTile(x, y); }
+                        const id = `tile-${x}-${y}`;
                         return (
                           <td key={id}>
                             <Tile id={id}>{tile}</Tile>
