@@ -1,23 +1,38 @@
 // @flow
 import React from 'react';
 import Immutable from 'immutable';
-import defaultSheetPath from './tile/default.png';
-import { createGlobalStyle } from 'styled-components'
+import { observer } from 'mobx-react';
+import styled, { createGlobalStyle } from 'styled-components'
 import DefaultFont from './tile/default.tff'
 import './App.css';
 
+import board, { Board } from './logic/board';
+import './logic/controller';
+
 const DefaultFontTile = createGlobalStyle`
   @font-face {
-    font-family: MyFont;
+    font-family: tile;
     src: url('${DefaultFont}') format('opentype');
   }
 `
 
-const defaultSheetImage = new Image();
-defaultSheetImage.src = defaultSheetPath;
+const Tile = styled.div`
+  font-family: tile;
+  font-size: 1em;
+`;
 
+const SquareTable = styled.table`
+border-collapse:collapse;
+border-spacing: 0px;
+table-layout: fixed;
+font-size: 1em;
 
-class SpriteSheet extends Immutable.Record({
+td, tr {
+	padding: 0px;
+}
+`
+
+class FontSheet extends Immutable.Record({
   style: DefaultFontTile,
   tileSize: 10,
   cols: 16,
@@ -34,103 +49,60 @@ class SpriteSheet extends Immutable.Record({
   }
 }
 
-class Map extends Immutable.Record({ cols: 0, tiles: new Immutable.List() }) {
-  get cols() {
-    return this.get('cols');
-  }
+const defaultSheet = new FontSheet();
 
-  get rows() {
-    return this.length / this.cols
-  }
-
-  get length() {
-    return this.get('tiles').size;
-  }
-
-  getTile(col, row) {
-    return this.getIn(['tiles', row * this.cols + col]);
-  }
-
-  setTile(col, row, value) {
-    this.setIn(['tiles', row * this.cols + col], value);
-  }
-}
-
-const defaultSheet = new SpriteSheet();
-const defaultMap = new Map({
-  tiles: Immutable.List([
-    0, 1, 2, 3, 5, 5, 10, 33,
-    2, 2, 2, 40, 3, 2, 38, 38,
-    2, 2, 2, 40, 3, 2, 38, 38,
-    0, 1, 2, 3, 5, 5, 10, 33,
-  ]),
-  cols: 8,
-});
-
-
-class SpriteSheetCanvas extends React.Component<{
-  map: Map,
-  spriteSheet: SpriteSheet,
+// Rewrap this class to avoid using new decorator syntax
+const FontSheetCanvas = observer(
+class FontSheetCanvas extends React.Component<{
+  map: Board,
+  sheet: FontSheet,
 }> {
-  canvasid = `canvas-${Math.floor(Math.random() * 1000)}`;
-
-  componentDidMount() {
-    this.updateTiles(this.props.map, this.props.spriteSheet);
-  }
-
-  componentDidUpdate(prevProp) {
-    this.updateTiles(this.props.map, this.props.spriteSheet);
-  }
-
-  get canvasContext() {
-    const element: ?HTMLCanvasElement = ((document.getElementById(this.canvasid): any): ?HTMLCanvasElement);
-    if (element === null || element === undefined) {
-      throw new Error(`Canvas element ${this.canvasid} was not found in the DOM`);
-    }
-
-    return element.getContext('2d'); 
-  }
-
-  updateTiles = (map, spriteSheet) => {
-    const context = this.canvasContext;
-    const tileSize = spriteSheet.get('tileSize');
-
-	for (let c = 0; c < map.cols; c++) {
-	  for (let r = 0; r < map.rows; r++) {
-		var tile = map.getTile(c, r);
-        const [cornerX, cornerY] = spriteSheet.getCorner(tile);
-		if (tile !== 0) { // 0 => empty tile
-		  context.drawImage(
-			spriteSheet.get('image'), // image
-			cornerX, // source x
-			cornerY, // source y
-			tileSize, // source width
-			tileSize, // source height
-			c * tileSize, // target x
-			r * tileSize, // target y
-			tileSize, // target width
-			tileSize // target height
-		  );
-		}
-	  }
-	}
-  }
 
   render() {
+    const Style = this.props.sheet.get('style');
+    const map = this.props.map;
     return (
-      <canvas id={this.canvasid}/>
+      <React.Fragment>
+      <Style />
+      <SquareTable>
+        <tbody>
+          {
+              Array(map.rows).fill().map((_, r) => {
+                const y = map.rows - r - 1;
+                return (
+                  <tr key={`row-${y}`}>
+                    {
+                      Array(map.cols).fill().map((_, x) => {
+                        const tile = map.getTile(x, y);
+                        const id = `tile-${x}-${y}`
+                        return (
+                          <td key={id}>
+                            <Tile id={id}>{tile}</Tile>
+                          </td>
+                        );
+                      })
+                    }
+                </tr>
+                );
+              }
+            )
+          }
+        </tbody>
+      </SquareTable>
+      </React.Fragment>
     );
   }
 }
+)
 
 
 class App extends React.Component<{}> {
   render() {
     return (
       <div className="App">
-          <SpriteSheetCanvas
-           map={defaultMap} 
-           spriteSheet={defaultSheet}
+          <FontSheetCanvas
+           map={board} 
+           sheet={defaultSheet}
           />
       </div>
     );
