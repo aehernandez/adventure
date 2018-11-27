@@ -74,7 +74,7 @@ export class Board {
   }
 
   moveObject(object: GameObject, x: number, y: number) {
-    if (this.objects.has(Immutable.List([x, y]))) {
+    if (this.hasObject(x, y)) {
       throw new Error('Cannot move an object to an occupied space');
     }
 
@@ -84,6 +84,10 @@ export class Board {
     }
     object.position = [x, y];
     this.objects = this.objects.delete(key).set(Immutable.List([x, y]), object);
+  }
+
+  hasObject(x: number, y: number) {
+    return this.objects.has(Immutable.List([x, y]));
   }
 
   getNode(x: number, y: number): Node {

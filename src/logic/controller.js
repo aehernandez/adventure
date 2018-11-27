@@ -5,22 +5,26 @@ import board, { Board } from './board';
 import type { Node } from 'React';
 import styled from 'styled-components';
 import { GameObject } from './object';
+import { EnemyBase } from './enemy';
 import Wall from './wall';
 
 
+const PlayerIdle = styled.span`
+  color: ${props => props.theme.primaryLight};
+`;
+
 class Player extends GameObject {
   component = (
-  	<span
-		css={`color: ${props => props.theme.primaryLight}`}
-	>
-	O
-  	</span>
-  )
+    <PlayerIdle>O</PlayerIdle>
+  );
 }
 
 
 const player = new Player();
 board.addObject(15, 15, player);
+
+const e1 = new EnemyBase();
+board.addObject(1, 1, e1);
 
 board.addObject(3, 6, new Wall());
 board.addObject(4, 6, new Wall());
@@ -51,6 +55,14 @@ function handleEvents(board: Board, player: Player, key: string) {
   }
   else if (key === 'l') {
     movePlayer(board, player, [x + 1, y]);
+  }
+
+  moveOthers(board, player, [e1]);
+}
+
+function moveOthers(board: Board, player: Player, others: EnemyBase[]) {
+  for (const other of others) {
+    other.turn(board, player)
   }
 }
 
