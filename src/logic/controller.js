@@ -1,30 +1,31 @@
 // @flow
-
+import React from 'react';
 import Immutable from 'immutable';
 import board, { Board } from './board';
 import type { Node } from 'React';
-import { GameObject, Label } from './object';
+import styled from 'styled-components';
+import { GameObject } from './object';
 import Wall from './wall';
 
-export const Direction = new Immutable.Record({ 
-  UP: 'UP', DOWN: 'DOWN', LEFT: 'LEFT', RIGHT: 'RIGHT' 
-})();
 
 class Player extends GameObject {
-  position: [number, number]
-  component: Node
-  direction: $Values<Direction>
+  component = (
+  	<span
+		css={`color: ${props => props.theme.primaryLight}`}
+	>
+	O
+  	</span>
+  )
 }
 
+
 const player = new Player();
-player.position = [3, 3];
-player.component = 'O'
-player.direction = Direction.UP;
+board.addObject(15, 15, player);
+
 board.addObject(3, 6, new Wall());
 board.addObject(4, 6, new Wall());
 board.addObject(5, 6, new Wall());
 board.addObject(6, 6, new Wall());
-board.addObject(3, 3, player);
 
 function movePlayer(board: Board, source: Player, target: [number, number]) {
   let [xTarget, yTarget] = target;
@@ -35,9 +36,6 @@ function movePlayer(board: Board, source: Player, target: [number, number]) {
   }
   
   board.moveObject(player, xTarget, yTarget);
-  // Update the players position
-  // TODO should the board controller be responsible?
-  player.position = [xTarget, yTarget];
 }
 
 function handleEvents(board: Board, player: Player, key: string) {
@@ -54,8 +52,6 @@ function handleEvents(board: Board, player: Player, key: string) {
   else if (key === 'l') {
     movePlayer(board, player, [x + 1, y]);
   }
-
-  console.log(player.position);
 }
 
 document.addEventListener('keydown', (e: SyntheticKeyboardEvent<>) => handleEvents(board, player, e.key));
