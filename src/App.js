@@ -3,9 +3,12 @@ import React from 'react';
 import type { Node } from 'react';
 import ReactDOM from "react-dom";
 import { observer } from 'mobx-react';
+import { Row, Col } from 'antd';
+
 import styled, { createGlobalStyle, ThemeProvider } from 'styled-components'
 import DefaultFont from './tile/default.tff'
 import './App.css';
+import StatsBoard from './components/stats';
 
 import board, { Board } from './logic/board';
 import './logic/controller';
