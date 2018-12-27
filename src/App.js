@@ -44,10 +44,10 @@ const Tile = styled.div`
 const SquareGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(${props => props.cols}, 10px);
-`
+`;
 
 const Body = styled.div`
-`
+`;
 
 type FixedGridProps = {
   cols: number,
@@ -86,8 +86,7 @@ class FixedGrid extends React.PureComponent<FixedGridProps> {
   }
 }
 
-// Rewrap this class to avoid using new decorator syntax
-const FontSheetCanvas = observer(
+@observer
 class FontSheetCanvas extends React.Component<{
   map: Board,
   nodes: $PropertyType<Board, 'nodes'>,
@@ -129,23 +128,28 @@ class FontSheetCanvas extends React.Component<{
     );
   }
 }
-)
 
 
-const App = observer(
+@observer
 class App extends React.Component<{}> {
   render() {
     return (
       <Body>
-          <FontSheetCanvas
-           map={board} 
-           nodes={board.nodes}
-          />
+          <Row>
+            <Col>
+              <FontSheetCanvas
+               map={board} 
+               nodes={board.nodes}
+              />
+            </Col>
+            <Col>
+              <StatsBoard />
+            </Col>
+          </Row>
       </Body>
     );
   }
 }
-);
 
 export default class Root extends React.PureComponent<{}> {
   render() {

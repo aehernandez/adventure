@@ -1,6 +1,6 @@
 //@flow
 import type { Node } from 'React';
-import * as mobx from 'mobx';
+import { observable, computed, action } from 'mobx';
 import Immutable from 'immutable';
 import { GameObject } from './object';
 
@@ -17,16 +17,16 @@ export class Board {
    * i = (W * (H - 1)) + x - H * y
   */
 
-  tiles = new Immutable.List<Node>();
-  objects: Immutable.Map<Immutable.List<number>, GameObject> = new Immutable.Map();
-  cols = 0;
+  @observable tiles = new Immutable.List<Node>();
+  @observable objects: Immutable.Map<Immutable.List<number>, GameObject> = new Immutable.Map();
+  @observable cols = 0;
 
   constructor(tiles: Immutable.List<Node>, cols: number) {
     this.tiles = tiles;
     this.cols = cols;
   }
 
-  get nodes(): Immutable.OrderedMap<Immutable.List<number>, Node> {
+  @computed get nodes(): Immutable.OrderedMap<Immutable.List<number>, Node> {
     let nodes = new Immutable.OrderedMap();
     for (let y = 0; y < this.rows; y++) {
       for (let x = 0; x < this.cols; x++) {
@@ -37,11 +37,11 @@ export class Board {
     return nodes;
   }
 
-  get rows() {
+  @computed get rows() {
     return this.length / this.cols
   }
 
-  get length() {
+  @computed get length() {
     return this.tiles.size;
   }
 
@@ -54,7 +54,7 @@ export class Board {
     return this.tiles.get(this.index(x, y), '\u2022');
   }
 
-  setTile(x: number, y: number, value: Node) {
+  @action setTile(x: number, y: number, value: Node) {
     if (!this.contained(x, y)) { throw new Error('not contained') }
     this.tiles = this.tiles.set(this.index(x, y), value);
   }
@@ -63,7 +63,7 @@ export class Board {
     return x >= 0 && y >= 0 && x < this.cols && y < this.rows;
   }
 
-  addObject(x: number, y: number, object: GameObject) {
+  @action addObject(x: number, y: number, object: GameObject) {
     if (!this.contained(x, y)) { throw new Error('not contained') }
     object.position = [x, y];
     this.objects = this.objects.set(Immutable.List([x, y]), object);
@@ -73,7 +73,7 @@ export class Board {
     return this.objects.get(Immutable.List([x, y]), undefined);
   }
 
-  moveObject(object: GameObject, x: number, y: number) {
+  @action moveObject(object: GameObject, x: number, y: number) {
     if (this.hasObject(x, y)) {
       throw new Error('Cannot move an object to an occupied space');
     }
@@ -116,18 +116,6 @@ export class Board {
   }
 }
 
-// Avoid using experimental decorate syntax
-mobx.decorate(
-  Board,
-  {
-    tiles: mobx.observable,
-    nodes: mobx.computed,
-    objects: mobx.observable,
-    cols: mobx.observable,
-    length: mobx.computed,
-    rows: mobx.computed,
-  }
-)
 
 export default new Board(
   Immutable.List(Array(50*30).fill('\u00b7')),
