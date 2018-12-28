@@ -1,4 +1,5 @@
 //@flow
+import React from 'react';
 import type { Node } from 'React';
 import { observable, computed, action } from 'mobx';
 import Immutable from 'immutable';
@@ -19,22 +20,12 @@ export class Board {
 
   @observable tiles = new Immutable.List<Node>();
   @observable objects: Immutable.Map<Immutable.List<number>, GameObject> = new Immutable.Map();
+  @observable overlay: Immutable.Map<Immutable.List<number>, Node> = new Immutable.Map();
   @observable cols = 0;
 
   constructor(tiles: Immutable.List<Node>, cols: number) {
     this.tiles = tiles;
     this.cols = cols;
-  }
-
-  @computed get nodes(): Immutable.OrderedMap<Immutable.List<number>, Node> {
-    let nodes = new Immutable.OrderedMap();
-    for (let y = 0; y < this.rows; y++) {
-      for (let x = 0; x < this.cols; x++) {
-        nodes = nodes.set(Immutable.List([x, y]), this.getNode(x, y));
-      }
-    }
-
-    return nodes;
   }
 
   @computed get rows() {
@@ -47,6 +38,17 @@ export class Board {
 
   index(x: number, y: number): number {
     return (this.cols * (this.rows - 1)) + x - (this.rows * y);
+  }
+
+  @computed get nodes(): Immutable.OrderedMap<Immutable.List<number>, Node> {
+    let nodes = new Immutable.OrderedMap();
+    for (let y = 0; y < this.rows; y++) {
+      for (let x = 0; x < this.cols; x++) {
+        nodes = nodes.set(Immutable.List([x, y]), this.getNode(x, y));
+      }
+    }
+
+    return nodes;
   }
 
   getTile(x: number, y: number): ?Node {
@@ -65,6 +67,7 @@ export class Board {
 
   @action addObject(x: number, y: number, object: GameObject) {
     if (!this.contained(x, y)) { throw new Error('not contained') }
+    if (this.hasObject(x, y)) { throw new Error('object already exists at location') }
     object.position = [x, y];
     this.objects = this.objects.set(Immutable.List([x, y]), object);
   }
@@ -90,13 +93,41 @@ export class Board {
     return this.objects.has(Immutable.List([x, y]));
   }
 
+  hasOverlay(x: number, y: number) {
+    return this.overlay.has(Immutable.List([x, y]));
+  }
+
+  setOverlay(x: number, y: number, value: Node) {
+    this.overlay = this.overlay.set(Immutable.List([x, y]), value);
+  }
+
+  getOverlay(x: number, y: number): ?Node {
+    return this.overlay.get(Immutable.List([x, y]), undefined);
+  }
+
+  removeOverlay(x: number, y: number) {
+    this.overlay = this.overlay.remove(Immutable.List([x, y]), undefined);
+  }
+
+
   getNode(x: number, y: number): Node {
     const object = this.getObject(x, y);
 
     let tile;
     if (object) { tile = object.component; }
     else { tile = this.getTile(x, y); }
-    return tile || ' ';
+    tile = tile || ' ';
+
+    const overlay = this.getOverlay(x, y);
+    if (overlay) {
+      console.log(overlay, x, y);
+      return React.createElement(
+        overlay,
+        {},
+        [tile]
+      );
+    }
+    return tile;
   }
 
   static diffNodes(left: $PropertyType<Board, 'nodes'>, right: $PropertyType<Board, 'nodes'>): Array<[[number, number], Node]> {

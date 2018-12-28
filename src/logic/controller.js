@@ -1,28 +1,13 @@
 // @flow
-import React from 'react';
 import Immutable from 'immutable';
 import board, { Board } from './board';
+import player, { Player } from './player';
 import type { Node } from 'React';
-import styled from 'styled-components';
-import { GameObject } from './object';
 import { EnemyBase } from './enemy';
+import { RangedAttack } from './action';
 import Wall from './wall';
 
-
-const PlayerIdle = styled.span`
-  color: ${props => props.theme.primaryLight};
-`;
-
-class Player extends GameObject {
-  component = (
-    <PlayerIdle>O</PlayerIdle>
-  );
-}
-
-
-const player = new Player();
 board.addObject(15, 15, player);
-
 const e1 = new EnemyBase();
 board.addObject(1, 1, e1);
 
@@ -42,28 +27,77 @@ function movePlayer(board: Board, source: Player, target: [number, number]) {
   board.moveObject(player, xTarget, yTarget);
 }
 
-function handleEvents(board: Board, player: Player, key: string) {
-  const [x, y] = player.position;
-  if (key === 'k') {
-    movePlayer(board, player, [x, y + 1]);
-  }
-  else if (key === 'j') {
-    movePlayer(board, player, [x, y - 1]);
-  }
-  else if (key === 'h') {
-    movePlayer(board, player, [x - 1, y]);
-  }
-  else if (key === 'l') {
-    movePlayer(board, player, [x + 1, y]);
+class MainLoop {
+  action = null;
+  player: Player;
+  board: Board;
+
+  constructor(player: Player, board: Board) {
+    this.player = player;
+    this.board = board;
   }
 
-  moveOthers(board, player, [e1]);
+  debouncer = new Set();
+
+  run() {
+    document.addEventListener('keydown', (e: SyntheticKeyboardEvent<>) => {
+      if (!this.debouncer.has(e.key)) {
+        this.debouncer.add(e.key);
+        this.handle(e.key);
+      }
+    });
+    document.addEventListener('keyup', (e) => {
+      this.debouncer.delete(e.key)
+    });
+  }
+
+  handle(key: string) {
+    if (this.action !== null) {
+      let result = this.action.next(key);
+      if (this.action !== null && !result.done) {
+        return;
+      }
+
+      this.action = null;
+    }
+
+    if (player.currentSpeed > 0) {
+      const [x, y] = player.position;
+      if (key === 'k') {
+        movePlayer(board, player, [x, y + 1]);
+        player.currentSpeed -= 1;
+      }
+      else if (key === 'j') {
+        movePlayer(board, player, [x, y - 1]);
+        player.currentSpeed -= 1;
+      }
+      else if (key === 'h') {
+        movePlayer(board, player, [x - 1, y]);
+        player.currentSpeed -= 1;
+      }
+      else if (key === 'l') {
+        movePlayer(board, player, [x + 1, y]);
+        player.currentSpeed -= 1;
+      }
+
+      if (key === 'a') {
+        this.action = new RangedAttack().run_iter(player, board);
+      }
+    }
+
+    if (player.currentSpeed <= 0) {
+      player.currentSpeed = player.speed;
+      moveOthers(this.player, this.board, [e1]);
+    }
+  }
 }
 
-function moveOthers(board: Board, player: Player, others: EnemyBase[]) {
+function moveOthers(player: Player, board: Board, others: EnemyBase[]) {
   for (const other of others) {
-    other.turn(board, player)
+    other.turn(board, player);
   }
 }
 
-document.addEventListener('keydown', (e: SyntheticKeyboardEvent<>) => handleEvents(board, player, e.key));
+
+const main = new MainLoop(player, board);
+main.run();
