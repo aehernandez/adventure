@@ -1,15 +1,16 @@
 // @flow
 import React from 'react';
+import styled from 'styled-components';
 import { GameObject } from './object';
+
+const WallIcon = styled.div`
+  color: ${props => props.theme.primaryMoreDark};
+`;
 
 export default class Wall extends GameObject {
   component = (
-    <span 
-      css={`
-        color: ${props => props.theme.primaryMoreDark};
-      `}
-    >
+    <WallIcon>
       {'\u2588'}
-    </span>
+    </WallIcon>
   );
 }

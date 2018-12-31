@@ -1,6 +1,6 @@
-// @flow
+// @flow strict
 import { createGlobalStyle } from 'styled-components'
-import DefaultFont from './tile/default.tff'
+import DefaultFont from 'src/tile/default.tff'
 
 const theme: {[string]: string} = {
   //http://paletton.com/#uid=33c0u0kFccSvg88DJ9VBOjtEyqu

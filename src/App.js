@@ -1,13 +1,13 @@
 // @flow
 import React from 'react';
-import type { Node } from 'react';
+import type { Element } from 'react';
 import ReactDOM from "react-dom";
 import { observer } from 'mobx-react';
 import { Row, Col } from 'antd';
-import theme, { DefaultFontTile } from './theme';
+import theme, { DefaultFontTile } from 'src/theme';
 import styled, { createGlobalStyle, ThemeProvider } from 'styled-components'
+import StatsBoard from 'src/components/stats';
 import './App.css';
-import StatsBoard from './components/stats';
 
 import board, { Board } from './logic/board';
 import './logic/controller';
@@ -78,7 +78,7 @@ class FontSheetCanvas extends React.Component<{
 }> {
   
   componentDidMount() {
-    const keys: Array<[[number, number], Node]> = (this.props.nodes.entrySeq().toJS(): any);
+    const keys: Array<[[number, number], Element<*>]> = (this.props.nodes.entrySeq().toJS(): any);
     this.updateBoard(keys);
   }
 
@@ -89,7 +89,7 @@ class FontSheetCanvas extends React.Component<{
     }
   }
 
-  updateBoard(keys: Array<[[number, number], Node]>) {
+  updateBoard(keys: Array<[[number, number], Element<*>]>) {
     for (let [[x, y], component] of keys) {
       const element = document.getElementById(`tile-${x}-${y}`);
       if (!element) { throw new Error('Could not found element'); }

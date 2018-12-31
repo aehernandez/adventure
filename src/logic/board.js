@@ -1,6 +1,6 @@
 //@flow
 import React from 'react';
-import type { Node } from 'React';
+import type { Element, ComponentType } from 'React';
 import { observable, computed, action } from 'mobx';
 import Immutable from 'immutable';
 import theme from '../theme';
@@ -19,12 +19,12 @@ export class Board {
    * i = (W * (H - 1)) + x - H * y
   */
 
-  @observable tiles = new Immutable.List<Node>();
+  @observable tiles = new Immutable.List<Element<*>>();
   @observable objects: Immutable.Map<Immutable.List<number>, GameObject> = new Immutable.Map();
-  @observable overlay: Immutable.Map<Immutable.List<number>, Node> = new Immutable.Map();
+  @observable overlay: Immutable.Map<Immutable.List<number>, ComponentType<*>> = new Immutable.Map();
   @observable cols = 0;
 
-  constructor(tiles: Immutable.List<Node>, cols: number) {
+  constructor(tiles: Immutable.List<Element<*>>, cols: number) {
     this.tiles = tiles;
     this.cols = cols;
   }
@@ -41,7 +41,7 @@ export class Board {
     return (this.cols * (this.rows - 1)) + x - (this.rows * y);
   }
 
-  @computed get nodes(): Immutable.OrderedMap<Immutable.List<number>, Node> {
+  @computed get nodes(): Immutable.OrderedMap<Immutable.List<number>, Element<*>> {
     let nodes = new Immutable.OrderedMap();
     for (let y = 0; y < this.rows; y++) {
       for (let x = 0; x < this.cols; x++) {
@@ -52,12 +52,12 @@ export class Board {
     return nodes;
   }
 
-  getTile(x: number, y: number): ?Node {
+  getTile(x: number, y: number): ?Element<*> {
     if (!this.contained(x, y)) { return undefined; }
-    return this.tiles.get(this.index(x, y), '\u2022');
+    return this.tiles.get(this.index(x, y), <span>{'\u2022'}</span>);
   }
 
-  @action setTile(x: number, y: number, value: Node) {
+  @action setTile(x: number, y: number, value: Element<*>) {
     if (!this.contained(x, y)) { throw new Error('not contained') }
     this.tiles = this.tiles.set(this.index(x, y), value);
   }
@@ -75,6 +75,11 @@ export class Board {
 
   getObject(x: number, y: number): ?GameObject {
     return this.objects.get(Immutable.List([x, y]), undefined);
+  }
+
+  @action removeObject(object: GameObject) {
+    const [x, y] = object.position;
+    this.objects = this.objects.remove(Immutable.List([x, y]));
   }
 
   @action moveObject(object: GameObject, x: number, y: number) {
@@ -98,26 +103,26 @@ export class Board {
     return this.overlay.has(Immutable.List([x, y]));
   }
 
-  setOverlay(x: number, y: number, value: Node) {
+  setOverlay(x: number, y: number, value: ComponentType<*>) {
     this.overlay = this.overlay.set(Immutable.List([x, y]), value);
   }
 
-  getOverlay(x: number, y: number): ?Node {
+  getOverlay(x: number, y: number): ?ComponentType<*> {
     return this.overlay.get(Immutable.List([x, y]), undefined);
   }
 
   removeOverlay(x: number, y: number) {
-    this.overlay = this.overlay.remove(Immutable.List([x, y]), undefined);
+    this.overlay = this.overlay.remove(Immutable.List([x, y]));
   }
 
 
-  getNode(x: number, y: number): Node {
+  getNode(x: number, y: number): Element<*> {
     const object = this.getObject(x, y);
 
     let tile;
     if (object) { tile = object.component; }
     else { tile = this.getTile(x, y); }
-    tile = tile || ' ';
+    tile = tile || <>' '</>;
 
     const overlay = this.getOverlay(x, y);
     if (overlay) {
@@ -132,10 +137,11 @@ export class Board {
         [tile]
       );
     }
+
     return tile;
   }
 
-  static diffNodes(left: $PropertyType<Board, 'nodes'>, right: $PropertyType<Board, 'nodes'>): Array<[[number, number], Node]> {
+  static diffNodes(left: $PropertyType<Board, 'nodes'>, right: $PropertyType<Board, 'nodes'>): Array<[[number, number], Element<*>]> {
     const differences = [];
 
     left.entrySeq().forEach(([k, v]) => {

@@ -1,8 +1,8 @@
 // @flow
 import React from 'react';
-import type { Node } from 'react';
+import type { ComponentType } from 'react';
 
-export default function withMouseOver(Component: Node) {
+export default function withMouseOver(Component: ComponentType<*>) {
   return class extends React.Component
     <{}, { mouseover: boolean }> 
   {

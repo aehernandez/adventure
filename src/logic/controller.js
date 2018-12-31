@@ -1,8 +1,6 @@
 // @flow
-import Immutable from 'immutable';
 import board, { Board } from './board';
 import player, { Player } from './player';
-import type { Node } from 'React';
 import { EnemyBase } from './enemy';
 import { RangedAttack } from './action';
 import Wall from './wall';
@@ -40,13 +38,13 @@ class MainLoop {
   debouncer = new Set();
 
   run() {
-    document.addEventListener('keydown', (e: SyntheticKeyboardEvent<>) => {
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
       if (!this.debouncer.has(e.key)) {
         this.debouncer.add(e.key);
         this.handle(e.key);
       }
     });
-    document.addEventListener('keyup', (e) => {
+    document.addEventListener('keyup', (e: KeyboardEvent) => {
       this.debouncer.delete(e.key)
     });
   }

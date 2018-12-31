@@ -1,7 +1,7 @@
 // @flow
-import React from 'react';
 import type { Board } from './board';
 import type { Player } from './player';
+import { EnemyBase } from 'src/logic/enemy';
 import styled from 'styled-components';
 
 interface Action {
@@ -20,7 +20,7 @@ const Target = styled.div`
 
 
 export class RangedAttack implements Action {
-  speed = 1;
+  speed = 2;
   cooldown = 1;
   currentCooldown = 1;
   range = 5
@@ -61,8 +61,18 @@ export class RangedAttack implements Action {
 
       if (key === ' ') {
         const object = board.getObject(x, y);
-        if (object !== undefined && object !== player) {
+        if (
+          object !== undefined && 
+          object !== player && 
+          object instanceof EnemyBase
+        ) {
           object.currentHealth -= 1;
+
+          if (object.currentHealth === 0) {
+            board.removeObject(object);
+          }
+
+          player.currentSpeed -= this.speed;
           break;
         }
       }

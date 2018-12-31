@@ -1,11 +1,11 @@
 // @flow
 import { observer } from 'mobx-react';
-import { observable, computed, action } from 'mobx';
 import React from 'react';
 import styled from 'styled-components';
 import { GameObject } from './object';
-import withMouseOver from '../components/withMouseOver';
 import OverlayStore from './overlayState';
+import type { Board } from './board';
+import type { Player } from './player';
 
 const EnemyIdle = styled.div`
   color: ${props => props.theme.alert};
@@ -32,7 +32,7 @@ export class EnemyBase extends GameObject {
     );
   }
   
-  turn(board, player) {
+  turn(board: Board, player: Player) {
     const [targetX, targetY] = player.position;
     const [x, y] = this.position;
     const stepX = (targetX - x) / Math.max(Math.abs(targetX - x), 1)

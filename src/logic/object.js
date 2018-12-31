@@ -13,7 +13,6 @@ export const Direction = new Immutable.Record({
 
 export class GameObject {
   position: [number, number];
-  component: Node;
-  direction: $Values<Direction> = Direction.ALL;
-  labels: Immutable.Set<$Values<Label>> = new Immutable.Set();;
+  +component: Element<*>;
+  direction: $Values<typeof Direction> = Direction.ALL;
 }
