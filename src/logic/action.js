@@ -62,7 +62,7 @@ export class RangedAttack implements Action {
       if (key === ' ') {
         const object = board.getObject(x, y);
         if (object !== undefined && object !== player) {
-          console.log('HIT', object);
+          object.currentHealth -= 1;
           break;
         }
       }

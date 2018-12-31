@@ -1,15 +1,36 @@
 // @flow
+import { observer } from 'mobx-react';
+import { observable, computed, action } from 'mobx';
 import React from 'react';
 import styled from 'styled-components';
 import { GameObject } from './object';
+import withMouseOver from '../components/withMouseOver';
+import OverlayStore from './overlayState';
 
-const EnemyIdle = styled.span`
+const EnemyIdle = styled.div`
   color: ${props => props.theme.alert};
 `;
+
+const HealthBlock = styled.div`
+  color: ${props => props.theme.alert};
+  font-size: 0.5em;
+  font-weight: bold;
+  transform: scale(1, 2.25);
+  transform-origin: 0% 0%;
+`;
+
 export class EnemyBase extends GameObject {
-	component = (
-      <EnemyIdle>X</EnemyIdle>
-	);
+  health = 10;
+  currentHealth = 10;
+
+  @observer get component() {
+    return (
+        OverlayStore.showStats ?
+        <HealthBlock>{this.currentHealth}</HealthBlock>
+        :
+        <EnemyIdle>X</EnemyIdle>
+    );
+  }
   
   turn(board, player) {
     const [targetX, targetY] = player.position;

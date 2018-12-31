@@ -82,6 +82,7 @@ class MainLoop {
 
       if (key === 'a') {
         this.action = new RangedAttack().run_iter(player, board);
+        this.action.next();
       }
     }
 
