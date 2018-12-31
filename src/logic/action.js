@@ -14,7 +14,7 @@ interface Action {
   run_iter(player: Player, board: Board, key: string): Generator<typeof undefined, typeof undefined, string>;
 }
 
-const Target = styled.span`
+const Target = styled.div`
   background: rgba(255, 0, 0, 0.4);
 `;
 
