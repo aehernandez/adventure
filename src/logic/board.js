@@ -3,6 +3,7 @@ import React from 'react';
 import type { Node } from 'React';
 import { observable, computed, action } from 'mobx';
 import Immutable from 'immutable';
+import theme from '../theme';
 import { GameObject } from './object';
 
 export class Board {
@@ -120,6 +121,10 @@ export class Board {
 
     const overlay = this.getOverlay(x, y);
     if (overlay) {
+      // Inject theme, in case we have a styled component
+      if (tile && typeof tile === 'object') {
+        tile = React.cloneElement(tile, { theme });
+      }
       console.log(overlay, x, y);
       return React.createElement(
         overlay,

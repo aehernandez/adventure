@@ -4,32 +4,14 @@ import type { Node } from 'react';
 import ReactDOM from "react-dom";
 import { observer } from 'mobx-react';
 import { Row, Col } from 'antd';
-
+import theme, { DefaultFontTile } from './theme';
 import styled, { createGlobalStyle, ThemeProvider } from 'styled-components'
-import DefaultFont from './tile/default.tff'
 import './App.css';
 import StatsBoard from './components/stats';
 
 import board, { Board } from './logic/board';
 import './logic/controller';
 
-const theme: {[string]: string} = {
-  //http://paletton.com/#uid=33c0u0kFccSvg88DJ9VBOjtEyqu
-  primaryLight: '#00876D',
-  primaryMoreDark: '#001B15',
-  primaryDark: '#012921',
-  primaryOffDark: '#00322A',
-  primary: '#004235',
-  secondary: '#674100',
-  alert: '#62000E',
-}
-
-const DefaultFontTile = createGlobalStyle`
-  @font-face {
-    font-family: tile;
-    src: url('${DefaultFont}') format('opentype');
-  }
-`;
 
 const DocumentStyle = createGlobalStyle`
   body {
@@ -38,7 +20,7 @@ const DocumentStyle = createGlobalStyle`
 `;
 
 const Tile = styled.div`
-  font-family: tile;
+  font-family: ${props => props.theme.font};
   font-size: 1em;
   background: ${props => props.theme.primaryOffDark};
   color: ${props => props.theme.primaryDark};
@@ -75,7 +57,7 @@ class FixedGrid extends React.PureComponent<FixedGridProps> {
                     Array(cols).fill().map((_, x) => {
                       const id = `${prefix}-${x}-${y}`;
                       return (
-                        <Tile id={id}>{' '}</Tile>
+                        <Tile key={id} id={id}>{' '}</Tile>
                       );
                     })
                   }
