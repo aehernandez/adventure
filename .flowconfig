@@ -1,11 +1,10 @@
-[ignore]
-
-[include]
-
-[libs]
-
-[lints]
-
 [options]
+module.name_mapper='^src/\(.*\)$' -> '<PROJECT_ROOT>/src/\1'
+esproposal.decorators=ignore
 
 [strict]
+nonstrict-import
+unclear-type
+unsafe-getters-setters
+untyped-import
+untyped-type-import
