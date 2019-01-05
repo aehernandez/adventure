@@ -9,7 +9,7 @@ import styled, { createGlobalStyle, ThemeProvider } from 'styled-components'
 import StatsBoard from 'src/components/stats';
 import './App.css';
 
-import board, { Board } from './logic/board';
+import board, { Board } from 'src/logic/board';
 import './logic/controller';
 
 

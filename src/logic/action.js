@@ -1,6 +1,6 @@
 // @flow
-import type { Board } from './board';
-import type { Player } from './player';
+import type { Board } from 'src/logic/board';
+import type { Player } from 'src/logic/player';
 import { EnemyBase } from 'src/logic/enemy';
 import styled from 'styled-components';
 
