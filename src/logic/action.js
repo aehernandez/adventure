@@ -11,7 +11,7 @@ interface Action {
   +description: string;
   +title: string;
 
-  run_iter(player: Player, board: Board, key: string): Generator<typeof undefined, typeof undefined, string>;
+  run(player: Player, board: Board): Generator<Action, Action, string>;
 }
 
 const Target = styled.div`
@@ -33,12 +33,13 @@ export class RangedAttack implements Action {
     return `Simple ranged attack. Deals ${this.damage} damage to ${this.target} target. S ${this.speed} C ${this.currentCooldown}/${this.cooldown}`;
   }
 
-  *run_iter(player: Player, board: Board): Generator<typeof undefined, typeof undefined, string> {
+  *run(player: Player, board: Board): Generator<Action, Action, string> {
     let [x, y] = player.position;
     board.setOverlay(x, y, Target);
+    const action: Action = this;
 
     do {
-      const key = yield;
+      const key = yield action;
 
       if (key === 'q') {
         break;
@@ -66,7 +67,7 @@ export class RangedAttack implements Action {
           object !== player && 
           object instanceof EnemyBase
         ) {
-          object.currentHealth -= 1;
+          object.currentHealth -= this.damage;
 
           if (object.currentHealth === 0) {
             board.removeObject(object);
@@ -79,5 +80,6 @@ export class RangedAttack implements Action {
     } while(true);
 
     board.removeOverlay(x, y);
+    return action;
   }
 }

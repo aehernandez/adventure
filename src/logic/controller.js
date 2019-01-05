@@ -2,7 +2,6 @@
 import board, { Board } from './board';
 import player, { Player } from './player';
 import { EnemyBase } from './enemy';
-import { RangedAttack } from './action';
 import Wall from './wall';
 
 board.addObject(15, 15, player);
@@ -14,19 +13,8 @@ board.addObject(4, 6, new Wall());
 board.addObject(5, 6, new Wall());
 board.addObject(6, 6, new Wall());
 
-function movePlayer(board: Board, source: Player, target: [number, number]) {
-  let [xTarget, yTarget] = target;
-  if (!board.contained(xTarget, yTarget))  { return; }
-  const targetObject = board.getObject(xTarget, yTarget);
-  if (targetObject) {
-    return;
-  }
-  
-  board.moveObject(player, xTarget, yTarget);
-}
-
 class MainLoop {
-  action = null;
+  playerTurn = null;
   player: Player;
   board: Board;
 
@@ -50,43 +38,19 @@ class MainLoop {
   }
 
   handle(key: string) {
-    if (this.action !== null) {
-      let result = this.action.next(key);
-      if (this.action !== null && !result.done) {
-        return;
-      }
-
-      this.action = null;
+    // Take the player's turn
+    // eslint-disable-next-line no-unused-vars
+    if (this.playerTurn === null) {
+      this.playerTurn = this.player.takeTurn(this.board);
+      this.playerTurn.next();
     }
 
-    if (player.currentSpeed > 0) {
-      const [x, y] = player.position;
-      if (key === 'k') {
-        movePlayer(board, player, [x, y + 1]);
-        player.currentSpeed -= 1;
-      }
-      else if (key === 'j') {
-        movePlayer(board, player, [x, y - 1]);
-        player.currentSpeed -= 1;
-      }
-      else if (key === 'h') {
-        movePlayer(board, player, [x - 1, y]);
-        player.currentSpeed -= 1;
-      }
-      else if (key === 'l') {
-        movePlayer(board, player, [x + 1, y]);
-        player.currentSpeed -= 1;
-      }
-
-      if (key === 'a') {
-        this.action = new RangedAttack().run_iter(player, board);
-        this.action.next();
-      }
-    }
-
-    if (player.currentSpeed <= 0) {
-      player.currentSpeed = player.speed;
+    // $FlowFixMe
+    let result = this.playerTurn.next(key);
+    if (result.done) {
+      this.playerTurn = null; 
       moveOthers(this.player, this.board, [e1]);
+      this.player.startTurn();
     }
   }
 }
