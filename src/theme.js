@@ -1,5 +1,5 @@
-// @flow strict
-import { createGlobalStyle } from 'styled-components'
+// @flow
+import styled, { createGlobalStyle } from 'styled-components'
 import DefaultFont from 'src/tile/default.tff'
 
 const theme: {[string]: string} = {
@@ -20,6 +20,11 @@ export const DefaultFontTile = createGlobalStyle`
     font-family: tile;
     src: url('${DefaultFont}') format('opentype');
   }
+`;
+
+export const MonoFont = styled.span`
+  font-family: tile;
+  font-size: 1em;
 `;
 
 export default theme;

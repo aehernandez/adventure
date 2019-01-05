@@ -30,7 +30,7 @@ export class RangedAttack implements Action {
   title = 'Revolver';
 
   get description() {
-    return `Simple ranged attack`;
+    return `Simple ranged attack. Deals ${this.damage} damage to ${this.target} target. S ${this.speed} C ${this.currentCooldown}/${this.cooldown}`;
   }
 
   *run_iter(player: Player, board: Board): Generator<typeof undefined, typeof undefined, string> {
